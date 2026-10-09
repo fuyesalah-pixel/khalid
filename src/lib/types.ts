@@ -8,6 +8,8 @@ export interface Project {
   videoUrl?: string
   /** YouTube video id for the case-study/showreel embed */
   videoId?: string
+  /** Resolved embed descriptor (platform + id) — added for YouTube/TikTok support */
+  videoLink?: { platform: 'youtube' | 'tiktok'; id: string; url: string }
   images: string[]
   tags: string[]
   role: string

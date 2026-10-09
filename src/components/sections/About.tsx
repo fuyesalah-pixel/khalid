@@ -33,7 +33,7 @@ const clients = [
   'Nejashi TV',
   'Shadow Battery',
   'Lawyer Addiss Mohammed',
-  'Misoso Academy',
+  'Diya Production',
   'Dana Production',
   'TOGT Tour & Travel',
 ]

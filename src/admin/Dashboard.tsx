@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import {
   useSiteData,
-  extractYouTubeId,
+  resolveVideoLink,
   isSafeMediaUrl,
   publishOverrides,
   fetchPublishedOverrides,
@@ -265,25 +265,39 @@ function VideosEditor({
   return (
     <div className="space-y-4">
       <p className="text-sm text-ink-soft">
-        Paste any YouTube link (watch, share, Shorts) — the site extracts the video automatically.
+        Paste any YouTube or TikTok link (watch, share, Shorts, vt.tiktok.com) — the site extracts the video automatically.
       </p>
       {projects.map((project) => {
         const open = openId === project.id
         const currentLink = videoLinks[project.id] ?? project.videoUrl ?? ''
-        const parsedId = extractYouTubeId(currentLink)
+        const parsed = resolveVideoLink(currentLink)
+        const parsedId = parsed?.platform === 'youtube' ? parsed.id : null
+        const isTikTok = parsed?.platform === 'tiktok'
         return (
           <div key={project.id} className="panel p-5">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="truncate font-display text-[15px] font-semibold text-ink">{project.title}</h3>
                 <p className="mono-tag mt-1 truncate">
-                  {parsedId ? `YT · ${parsedId}` : 'No video set'}
+                  {isTikTok
+                    ? `TikTok · ${parsed?.id}`
+                    : parsedId
+                      ? `YT · ${parsedId}`
+                      : 'No video set'}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 {parsedId && (
                   <img
                     src={`https://i.ytimg.com/vi/${parsedId}/default.jpg`}
+                    alt=""
+                    className="h-9 w-16 rounded border border-line object-cover"
+                    aria-hidden="true"
+                  />
+                )}
+                {isTikTok && (
+                  <img
+                    src="/tiktok-toggle.svg"
                     alt=""
                     className="h-9 w-16 rounded border border-line object-cover"
                     aria-hidden="true"
@@ -349,27 +363,29 @@ function ProjectForm({
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
 
-  const parsedId = extractYouTubeId(link)
+  const parsed = resolveVideoLink(link)
 
   return (
     <div className="space-y-4 pt-5">
       <div>
         <Input
-          label="Video link (YouTube URL or ID)"
+          label="Video link (YouTube or TikTok URL or ID)"
           value={link}
           onChange={(e) => {
             setLink(e.target.value)
             onChange(project.id, { videoUrl: e.target.value })
           }}
-          placeholder="https://youtube.com/watch?v=…"
+          placeholder="https://youtube.com/watch?v=… or https://www.tiktok.com/@user/video/…"
         />
-        {link && !parsedId && (
+        {link && !parsed && (
           <p className="mt-1.5 text-xs text-red-500" role="alert">
-            Could not find a YouTube video ID in that link
+            Could not find a YouTube or TikTok video ID in that link
           </p>
         )}
-        {parsedId && (
-          <p className="mono-tag mt-1.5">Video ID · {parsedId}</p>
+        {parsed && (
+          <p className="mono-tag mt-1.5">
+            {parsed.platform === 'youtube' ? 'YouTube ID' : 'TikTok video'} · {parsed.id}
+          </p>
         )}
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -400,14 +416,14 @@ function ProjectForm({
           <Check className="h-4 w-4" aria-hidden="true" />
           Save changes
         </Button>
-        {parsedId && (
+        {parsed && (
           <a
-            href={`https://youtube.com/watch?v=${parsedId}`}
+            href={parsed.platform === 'tiktok' ? `https://www.tiktok.com/${parsed.id}` : `https://youtube.com/watch?v=${parsed.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-ink-faint transition-colors hover:text-flame"
           >
-            Preview on YouTube ↗
+            Preview on {parsed.platform === 'tiktok' ? 'TikTok' : 'YouTube'} ↗
           </a>
         )}
       </div>

@@ -23,8 +23,18 @@ const LS_KEY = 'khalidscut:overrides'
 const API_ENDPOINT = '/api/overrides'
 
 /* ------------------------------------------------------------------ */
-/* YouTube helpers                                                     */
+/* Video link helpers (YouTube + TikTok)                               */
 /* ------------------------------------------------------------------ */
+
+export type VideoPlatform = 'youtube' | 'tiktok'
+
+export interface ResolvedVideo {
+  platform: VideoPlatform
+  /** YouTube video id, or TikTok "@handle/videoId" pair */
+  id: string
+  /** Canonical URL for an "open on YouTube/TikTok" link */
+  url: string
+}
 
 /** Accepts a full YouTube URL (watch, youtu.be, shorts, embed, live) or a raw ID */
 export function extractYouTubeId(input: string): string | null {
@@ -45,6 +55,49 @@ export function extractYouTubeId(input: string): string | null {
   }
   const bare = trimmed.match(/[\w-]{11}/)
   return bare?.[0] ?? null
+}
+
+/** Accepts a TikTok video URL — full, canonical, or vt.tiktok.com short — and
+ * returns the "@handle/videoId" string used by TikTok's embed endpoints. */
+export function extractTikTokVideo(input: string): string | null {
+  if (!input) return null
+  try {
+    const url = new URL(input.trim().startsWith('http') ? input.trim() : `https://${input.trim()}`)
+    const host = url.hostname.replace(/^www\./, '').replace(/^m\./, '')
+    if (!(host === 'tiktok.com' || host.endsWith('.tiktok.com'))) return null
+
+    // Short links (vt.tiktok.com/xxxx) redirect to the canonical
+    // /@handle/video/<id> page, so just treat them as TikTok links whose id
+    // is still unknown until the browser follows the redirect.
+    if (host === 'vt.tiktok.com') return null
+
+    const m = url.pathname.match(/\/@([\w.-]+?)\/(?:video|photo)\/(\d+)/)
+    return m ? `@${m[1]}/video/${m[2]}` : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Resolve any supported video link (YouTube or TikTok) into a uniform
+ * descriptor the embed components can render. Returns null for
+ * unrecognized links.
+ */
+export function resolveVideoLink(input: string | undefined): ResolvedVideo | null {
+  if (!input) return null
+  const trimmed = input.trim()
+
+  const tiktok = extractTikTokVideo(trimmed)
+  if (tiktok) {
+    return { platform: 'tiktok', id: tiktok, url: `https://www.tiktok.com/${tiktok}` }
+  }
+
+  const yt = extractYouTubeId(trimmed)
+  if (yt) {
+    return { platform: 'youtube', id: yt, url: `https://youtube.com/watch?v=${yt}` }
+  }
+
+  return null
 }
 
 /** Any direct image/video URL (used for hero profile image) */
@@ -115,6 +168,7 @@ function computeData(o: Overrides): SiteData {
       ...edit,
       videoUrl: rawVideo,
       videoId: (rawVideo ? extractYouTubeId(rawVideo) : null) ?? undefined,
+      videoLink: resolveVideoLink(rawVideo) ?? undefined,
     }
   })
   return {

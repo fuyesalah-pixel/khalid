@@ -1,15 +1,19 @@
 /* Editable content model shared by the public site and the admin dashboard */
 
+export type VideoPlatform = 'youtube' | 'tiktok'
+
 export interface AdminProject {
   id: string
   title: string
   /** Short line under the title (client / one-line pitch) */
   subtitle: string
   description: string
-  /** Full YouTube URL or raw video id */
+  /** Full YouTube or TikTok URL (or raw YouTube id) */
   videoUrl?: string
   /** Resolved 11-char YouTube id (computed by the store from videoUrl) */
   videoId?: string
+  /** Resolved embed descriptor (platform + embed id) — computed by the store */
+  videoLink?: { platform: VideoPlatform; id: string; url: string }
   year: number
   category: string
   featured: boolean
@@ -47,42 +51,9 @@ export const defaultProjects: AdminProject[] = [
     subtitle: 'Nejashi TV · Network rebrand',
     description:
       'Complete visual identity package for a major television network including lower thirds, transitions, bumpers, and show packaging. Delivered 200+ motion assets in 6 weeks.',
-    videoUrl: 'https://youtube.com/watch?v=eRsGyueVLvQ',
+    videoUrl: 'https://youtu.be/pe1IgKrL91M',
     year: 2024,
     category: 'Broadcast Design',
-    featured: true,
-  },
-  {
-    id: 'shadow-battery',
-    title: 'Shadow Battery — Product Launch',
-    subtitle: 'Shadow Battery · 3D commercial',
-    description:
-      'High-energy product launch campaign featuring 3D product visualization, kinetic typography, and multi-platform deliverables. Generated 500K+ views in first week.',
-    videoUrl: 'https://youtube.com/watch?v=aqz-KE-bpKQ',
-    year: 2024,
-    category: 'Commercial',
-    featured: true,
-  },
-  {
-    id: 'lawyer-addiss',
-    title: 'Lawyer Addiss Mohammed — Personal Brand',
-    subtitle: 'Personal branding · Short-form series',
-    description:
-      'Built complete personal brand video strategy including educational series, client testimonials, and short-form content. Increased consultation requests by 300%.',
-    videoUrl: 'https://youtube.com/watch?v=R6MlUcmOul8',
-    year: 2023,
-    category: 'Personal Branding',
-    featured: true,
-  },
-  {
-    id: 'misoso-academy',
-    title: 'Misoso Academy — Course Platform',
-    subtitle: 'EdTech · 50+ hours produced',
-    description:
-      'Produced 50+ hours of premium course content including motion graphics explainers, screen recordings, and interactive elements. Platform launched with 2000+ students.',
-    videoUrl: 'https://youtube.com/watch?v=TLkA0RELQ1g',
-    year: 2023,
-    category: 'Educational',
     featured: true,
   },
   {
@@ -91,10 +62,43 @@ export const defaultProjects: AdminProject[] = [
     subtitle: 'Documentary · 6 episodes',
     description:
       'Edited 6-episode documentary series with complex narrative structure, archival footage integration, and multilingual subtitles. Selected for international film festival.',
-    videoUrl: 'https://youtube.com/watch?v=1La4QzGeaaQ',
+    videoUrl: 'https://youtu.be/Y5Y3ZEB76Zs',
     year: 2022,
     category: 'Documentary',
     featured: true,
+  },
+  {
+    id: 'lawyer-addiss',
+    title: 'Lawyer Addiss Mohammed — Personal Brand',
+    subtitle: 'Personal branding · Short-form series',
+    description:
+      'Built complete personal brand video strategy including educational series, client testimonials, and short-form content. Increased consultation requests by 300%.',
+    videoUrl: 'https://youtu.be/WtSMLH0hTpE',
+    year: 2023,
+    category: 'Personal Branding',
+    featured: true,
+  },
+  {
+    id: 'shadow-battery',
+    title: 'Shadow Battery — Product Launch',
+    subtitle: 'Shadow Battery · 3D commercial',
+    description:
+      'High-energy product launch campaign featuring 3D product visualization, kinetic typography, and multi-platform deliverables. Generated 500K+ views in first week.',
+    videoUrl: 'https://www.tiktok.com/@zumi_industryplc/video/7628946721170574599',
+    year: 2024,
+    category: 'Commercial',
+    featured: true,
+  },
+  {
+    id: 'diya-production',
+    title: 'Diya Production — Event Films',
+    subtitle: 'Diya Production · Event highlight',
+    description:
+      'Wedding and event highlight films cut for vertical-first social reach — fast hooks, clean pacing and music-synced edits that hold attention to the last frame.',
+    videoUrl: 'https://www.tiktok.com/@diya_nesre/video/7684558765202459912',
+    year: 2025,
+    category: 'Event & Social',
+    featured: false,
   },
   {
     id: 'togt-travel',
@@ -102,7 +106,7 @@ export const defaultProjects: AdminProject[] = [
     subtitle: 'Travel · Drone cinematography',
     description:
       'Created seasonal destination campaigns for 10+ locations combining drone cinematography, cultural storytelling, and conversion-focused CTAs. Boosted bookings 45%.',
-    videoUrl: 'https://youtube.com/watch?v=WhWc3b3KhnY',
+    videoUrl: 'https://www.tiktok.com/@togtourandtravels/video/7677847465130970389',
     year: 2022,
     category: 'Travel & Tourism',
     featured: false,
